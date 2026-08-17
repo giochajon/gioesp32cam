@@ -1,0 +1,6 @@
+{
+    "micropico.manualComPort": "/dev/ttyUSB0",
+    "micropico.syncFolder": "",
+    "micropico.openOnStart": false,
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
+}
