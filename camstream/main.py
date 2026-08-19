@@ -4,7 +4,9 @@ import socket
 import network
 import camera
 
-from secrets import WIFI_SSID, WIFI_PASSWORD
+from secrets import WIFI_MODE, NETWORKS
+
+CURRENT_NETWORK = NETWORKS[WIFI_MODE]
 
 # ---------------------------------------------------------------------------
 # Runtime camera settings. These are the *defaults* used at boot; the web UI
@@ -83,8 +85,14 @@ def try_connect_wifi(sta):
     # and if we're mid-attempt, re-issuing connect() just restarts it.
     if sta.isconnected():
         return
-    print("Connecting to WiFi:", WIFI_SSID)
-    sta.connect(WIFI_SSID, WIFI_PASSWORD)
+    static_ip = CURRENT_NETWORK.get("static_ip")
+    if static_ip:
+        # Setting ifconfig before connect() disables DHCP and pins the
+        # address, so the device is always reachable at the same IP
+        # (phone hotspots don't offer a way to look up a device's DHCP IP).
+        sta.ifconfig(static_ip)
+    print("Connecting to WiFi (%s):" % WIFI_MODE, CURRENT_NETWORK["ssid"])
+    sta.connect(CURRENT_NETWORK["ssid"], CURRENT_NETWORK["password"])
     attempts = 10
     while not sta.isconnected() and attempts > 0:
         time.sleep(1)
