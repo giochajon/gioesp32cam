@@ -32,14 +32,29 @@ esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash -z 0x1000 micropython_ca
 
 ### 2. Configure WiFi credentials
 
-Edit [camstream/secrets.py](camstream/secrets.py):
+Copy [camstream/secrets.example.py](camstream/secrets.example.py) to `camstream/secrets.py` and fill in your network(s):
 
 ```python
-WIFI_SSID = "your-network-name"
-WIFI_PASSWORD = "your-network-password"
+WIFI_MODE = "home"  # "home" or "travel" - switch before flashing/rebooting
+
+NETWORKS = {
+    "home": {
+        "ssid": "your-network-name",
+        "password": "your-network-password",
+    },
+    "travel": {
+        # e.g. a phone hotspot - static_ip is optional; include it to give the
+        # device a fixed, predictable IP instead of whatever DHCP hands out.
+        "ssid": "your-hotspot-name",
+        "password": "your-hotspot-password",
+        "static_ip": ("172.20.10.5", "255.255.255.240", "172.20.10.1", "172.20.10.1"),
+    },
+}
 ```
 
-This file holds a plaintext password — keep it out of version control (add it to `.gitignore` if you plan to push this repo publicly).
+`WIFI_MODE` picks which entry in `NETWORKS` the board connects to at boot. `static_ip` is optional (`(ip, subnet, gateway, dns)`) — set it when the network won't reliably show you the device's DHCP-assigned address, like a phone hotspot; the values above are the iPhone Personal Hotspot defaults (`172.20.10.0/28`, gateway `172.20.10.1`), with `.5` chosen to sit outside the DHCP range iOS hands out (`.2`–`.14`).
+
+This file holds plaintext passwords — keep it out of version control (it's already in `.gitignore`).
 
 ### 3. Upload the project to the board
 
@@ -60,7 +75,7 @@ Only one program can hold the serial port at a time — disconnect Thonny, VSCod
 
 ## Using it
 
-Once running, the board prints its IP address over serial (e.g. via `mpremote connect /dev/ttyUSB0` or Thonny's Shell). Open that IP in a browser on the same WiFi network:
+Once running, the board prints its IP address over serial (e.g. via `mpremote connect /dev/ttyUSB0` or Thonny's Shell) — or, in `travel` mode with `static_ip` set, it's always the fixed address from `secrets.py`. Open that IP in a browser on the same WiFi network:
 
 | URL | What it does |
 |---|---|
